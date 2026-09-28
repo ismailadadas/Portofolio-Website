@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mie Ayam Azhari</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Titan+One&family=Plus+Jakarta+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Roboto:wght@400;500;700&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --kecap:#170f0a;       /* soy-sauce night */
+  --kecap-2:#231710;
+  --kuah:#eaa53c;        /* broth gold */
+  --sambal:#e0472c;      /* chili red */
+  --sawi:#7fa845;        /* bok choy green */
+  --porselen:#f4efe4;    /* bowl porcelain */
+  --asap:#b9a894;        /* steam / muted text */
+  --garis:rgba(244,239,228,.14);
+  --display:"Titan One","Arial Black",Impact,sans-serif;
+  --body:"Roboto",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Roboto",system-ui,-apple-system,"Segoe UI",sans-serif;
+  /* heading faces kept as they were */
+  --head-sans:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --head-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:var(--kecap);color:var(--porselen);font-family:var(--body);font-size:16px;line-height:1.6}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:0}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.07;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+header.bar{position:fixed;left:0;right:0;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:calc(18px + env(safe-area-inset-top,0px)) clamp(16px,5vw,64px) 18px;
+  background:linear-gradient(var(--kecap) 40%,transparent)}
+.logo{font-family:var(--display);font-size:20px;letter-spacing:.02em;color:var(--kuah);text-decoration:none}
+nav{display:flex;gap:clamp(12px,2.5vw,28px);flex-wrap:wrap}
+nav a{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--asap);text-decoration:none;transition:color .3s}
+nav a:hover,nav a:focus-visible,nav a.aktif{color:var(--kuah)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--kuah);outline-offset:3px;border-radius:4px}
+
+/* full-page jumping */
+.viewport{position:fixed;inset:0;z-index:2;overflow:hidden}
+.track{will-change:transform}
+.page{height:var(--vh,100vh);overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;display:flex;flex-direction:column;
+  padding-inline:clamp(16px,5vw,64px);padding-block:calc(84px + env(safe-area-inset-top,0px)) calc(96px + env(safe-area-inset-bottom,0px))}
+.page::-webkit-scrollbar{display:none}
+.page > .isi{margin-block:auto;width:min(560px,100%)}
+.page > .hero{width:min(720px,100%)}
+
+.hero{display:flex;flex-direction:column;gap:22px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--sawi)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(56px,11vw,148px);line-height:.9;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1 .kuah{color:var(--kuah)}
+h1 .sambal{color:var(--sambal)}
+.lede{font-size:clamp(17px,2vw,20px);max-width:34ch;color:var(--porselen);margin:0}
+.hint{font-family:var(--mono);font-size:12px;color:var(--asap);display:flex;align-items:center;gap:10px}
+.hint i{display:inline-block;width:1px;height:28px;background:var(--kuah);animation:drip 1.8s ease-in-out infinite}
+@keyframes drip{0%,100%{transform:scaleY(.4);transform-origin:top}50%{transform:scaleY(1)}}
+
+.kartu{background:rgba(23,15,10,.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--garis);border-radius:18px;padding:clamp(22px,3.5vw,36px);display:grid;gap:18px}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(36px,5.5vw,60px);line-height:1;margin:0;text-wrap:balance}
+h2 small{display:block;font-family:var(--head-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--kuah);margin-bottom:12px}
+p{margin:0;max-width:62ch}
+.muted{color:var(--asap)}
+
+/* menu board */
+.menu{list-style:none;margin:0;padding:0;display:grid}
+.menu li{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding-block:18px;border-top:1px dashed var(--garis)}
+.menu li:last-child{border-bottom:1px dashed var(--garis)}
+.menu h3{margin:0;font-family:var(--head-sans);font-size:18px;font-weight:700;line-height:1.35}
+.menu h3 a{color:inherit;text-decoration:none;background:linear-gradient(var(--kuah),var(--kuah)) 0 100%/0 2px no-repeat;transition:background-size .3s}
+.menu h3 a:hover,.menu h3 a:focus-visible{background-size:100% 2px}
+.tautan{display:flex;flex-wrap:wrap;gap:8px}
+.tautan a{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--porselen);text-decoration:none;border:1px solid var(--garis);border-radius:99px;padding:8px 14px;transition:border-color .2s,color .2s}
+.tautan a:hover,.tautan a:focus-visible{border-color:var(--kuah);color:var(--kuah)}
+.menu .porsi{font-family:var(--mono);font-size:13px;color:var(--kuah);font-variant-numeric:tabular-nums;white-space:nowrap}
+.menu p{grid-column:1/-1;color:var(--asap);font-size:15px}
+.menu .tag{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.menu .tag span{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:99px;border:1px solid var(--garis);color:var(--porselen)}
+
+/* bumbu */
+.bumbu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.bumbu div{border:1px solid var(--garis);border-radius:12px;padding:12px 14px;display:grid;gap:4px}
+.bumbu b{font-size:15px}
+.bumbu .level{font-family:var(--mono);font-size:11px;color:var(--asap);letter-spacing:.06em}
+.cabai{color:var(--sambal);letter-spacing:2px}
+
+.kontak-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.email{font-family:var(--mono);font-size:clamp(15px,2.2vw,19px);color:var(--kuah);user-select:all;word-break:break-all}
+button.salin{font:600 13px var(--body);background:var(--kuah);color:var(--kecap);border:0;border-radius:99px;padding:10px 18px;cursor:pointer;transition:transform .15s}
+button.salin:hover{transform:translateY(-2px)}
+.catatan{font-family:var(--mono);font-size:11px;color:var(--asap);border-left:2px solid var(--sawi);padding-left:10px}
+footer{margin-top:28px;font-family:var(--mono);font-size:12px;color:var(--asap);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+.meter{position:fixed;left:clamp(16px,5vw,64px);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:6;display:grid;gap:6px;
+  font-family:var(--mono);font-size:12px;color:var(--asap);background:rgba(23,15,10,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--garis);border-radius:12px;padding:10px 14px;width:170px}
+.meter b{color:var(--kuah);font-variant-numeric:tabular-nums}
+.meter-track{height:4px;border-radius:4px;background:var(--garis);overflow:hidden}
+.meter-bar{display:block;height:100%;background:var(--kuah);transform:scaleX(0);transform-origin:left}
+.meter.done .meter-bar{background:var(--sawi)}
+.meter.done b{color:var(--sawi)}
+.toast{position:fixed;left:50%;top:calc(90px + env(safe-area-inset-top,0px));z-index:6;transform:translate(-50%,-20px) scale(.96);opacity:0;pointer-events:none;
+  background:var(--kuah);color:var(--kecap);border-radius:16px;padding:14px 22px;display:grid;gap:2px;text-align:center;width:min(420px,calc(100% - 32px));
+  box-shadow:0 20px 60px rgba(234,165,60,.35);transition:opacity .4s,transform .5s cubic-bezier(.2,1.4,.4,1)}
+.toast strong{font-family:var(--display);font-weight:400;font-size:24px}
+.toast span{font-size:14px}
+.toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
+/* page indicator, right middle */
+.titik{position:fixed;right:calc(clamp(12px,2.5vw,32px) + env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);z-index:6;
+  display:flex;flex-direction:column;align-items:flex-end;gap:14px}
+.titik button{position:relative;display:flex;align-items:center;gap:10px;background:none;border:0;padding:4px 0;cursor:pointer;color:#fff;font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.titik .lbl{opacity:0;transform:translateX(6px);transition:opacity .3s,transform .3s;white-space:nowrap}
+.titik .bar{display:block;width:4px;height:14px;border-radius:4px;background:rgba(255,255,255,.35);transition:height .45s cubic-bezier(.65,0,.35,1),background .3s}
+.titik button:hover .bar{background:rgba(255,255,255,.7)}
+.titik button:hover .lbl,.titik button:focus-visible .lbl,.titik button.aktif .lbl{opacity:1;transform:none}
+.titik button.aktif .bar{height:42px;background:#fff;box-shadow:0 0 12px rgba(255,255,255,.5)}
+.titik .no{font-family:var(--mono);font-size:11px;color:#fff;opacity:.8;font-variant-numeric:tabular-nums}
+@media (max-width:720px){.titik .lbl{display:none}}
+@media (min-width:720px){
+  /* text keeps to the left half so it never runs under the bowl as the window shrinks */
+  .page > .isi{width:min(560px,46vw)}
+  .page > .hero{width:min(720px,48vw)}
+  h1{font-size:clamp(44px,8vw,148px)}
+  h2{font-size:clamp(30px,4.2vw,60px)}
+}
+/* portrait tablet: text sits at the top, the bowl lives in the lower half */
+@media (min-width:600px) and (max-aspect-ratio:105/100){
+  .page > .isi,.page > .hero{margin-block:0 auto;width:min(620px,100%)}
+  .page.page.hero-page{padding-top:calc(84px + env(safe-area-inset-top,0px))}
+  h1{font-size:clamp(56px,11vw,120px)}
+  h2{font-size:clamp(34px,6vw,56px)}
+}
+@media (max-width:720px){
+  .meter{width:140px}
+  .page.hero-page{padding-top:46vh}
+  nav a:nth-child(n+3){display:none}
+}
+@media (prefers-reduced-motion:reduce){.hint i{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="scene" aria-hidden="true"></canvas>
+<div class="grain"></div>
+
+<div class="titik" id="titik" aria-label="Halaman"></div>
+<div class="meter" id="meter" aria-live="polite">
+  <span class="meter-label">Diaduk <b><span id="meterNum">0</span>%</b></span>
+  <span class="meter-track"><span class="meter-bar" id="meterBar"></span></span>
+</div>
+<div class="toast" id="toast" role="status">
+  <strong>Mie ayam siap disajikan!</strong>
+  <span>Sudah diaduk rata. Selamat makan, lalu jangan lupa kirim email.</span>
+</div>
+
+<header class="bar">
+    <a class="logo" href="#top">Azhari Dadas</a>
+    <nav>
+      <a href="#resep">Resep</a>
+      <a href="#menu">Menu</a>
+      <a href="#bumbu">Bumbu</a>
+      <a href="#pesan">Pesan</a>
+    </nav>
+  </header>
+
+<div class="viewport" id="viewport">
+  <main class="track" id="track">
+    <section class="page hero-page" id="top">
+    <div class="hero">
+      <span class="eyebrow">Fresh graduate · Sistem Informasi BINUS</span>
+      <h1>Mie <span class="kuah">Ayam</span><br>Azhari <span class="sambal">Dadas</span></h1>
+      <p class="lede">Lulusan Sistem Informasi yang suka dua hal: semangkuk mie ayam dan membaca pergerakan pasar. Aku meracik data jadi analisis, dan AI jadi alat yang benar-benar dipakai.</p>
+      <span class="hint"><i></i> Gulir atau tekan panah bawah untuk mengaduk</span>
+    </div>
+    </section>
+
+    <section class="page" id="resep">
+      <div class="kartu isi">
+        <h2><small>01 · Resep rahasia</small>Tentang aku</h2>
+        <p>Aku Azhari, baru lulus S1 Sistem Informasi di BINUS University. Skripsiku membangun chatbot AI yang membantu karyawan membaca lembar data keselamatan bahan kimia langsung dari Telegram, lengkap dengan tabel dan simbol bahayanya.</p>
+        <p class="muted">Di luar kode, aku menganalisis Bitcoin, siklus halving, dan dampak geopolitik ke pasar, lalu menuliskannya di Medium dan TradingView. Minatku ada di pertemuan data, AI, dan keuangan. Dan tentu saja, berburu mie ayam enak.</p>
+      </div>
+    </section>
+
+    <section class="page" id="menu">
+      <div class="kartu isi">
+        <h2><small>02 · Daftar menu</small>Proyek &amp; tulisan</h2>
+        <ul class="menu">
+          <li>
+            <h3><a href="https://github.com/ismailadadas/aquatekengineering-rag-multimodal-chatbot-telegram" target="_blank" rel="noopener">Chatbot RAG Multimodal untuk Keselamatan Kerja</a></h3><span class="porsi">Menu utama · Skripsi</span>
+            <p>Bot Telegram untuk PT Aquatek Engineering yang menjawab pertanyaan tentang MSDS: membaca tabel rumit dan simbol bahaya GHS, semua model berjalan lokal. Diuji pada 50 pertanyaan: akurasi 82%, faithfulness 0,98.</p>
+            <div class="tag"><span>Python</span><span>LangChain</span><span>Llama 3.2 Vision</span><span>ChromaDB</span><span>Ollama</span></div>
+          </li>
+          <li>
+            <h3><a href="https://www.tradingview.com/chart/BTCUSD/Dh7mqfSr/" target="_blank" rel="noopener">Memahami Siklus Halving Bitcoin</a></h3><span class="porsi">Spesial · TradingView</span>
+            <p>Analisis grafik mingguan lebih dari 12 tahun data Bitcoin: memetakan fase bull run, bear market, dan akumulasi di empat halving untuk membaca struktur pasar.</p>
+            <div class="tag"><span>Analisis teknikal</span><span>BTCUSD</span></div>
+          </li>
+          <li>
+            <h3><a href="https://medium.com/@ismailadadas/bitcoins-2026-2027-entry-strategy-how-to-spot-the-absolute-bottom-using-the-70-30-rule-3885af602c05" target="_blank" rel="noopener">Strategi Masuk Bitcoin 2026–2027: Aturan 70/30</a></h3><span class="porsi">Pedas · Feb 2026</span>
+            <p>Kerangka untuk mengenali titik terendah siklus berdasarkan pola penurunan yang makin mengecil dan moving average mingguan.</p>
+            <div class="tag"><span>Medium</span><span>Riset pasar</span></div>
+          </li>
+          <li>
+            <h3><a href="https://medium.com/@ismailadadas/before-2028-understand-the-bitcoin-halving-cycle-through-historical-patterns-and-future-d7a0d8ac0348" target="_blank" rel="noopener">Sebelum 2028: Siklus Halving Bitcoin</a></h3><span class="porsi">Pangsit · Des 2025</span>
+            <p>Membaca pola empat halving sebelumnya untuk memproyeksikan fase pasar sampai halving berikutnya.</p>
+            <div class="tag"><span>Medium</span><span>Bitcoin</span></div>
+          </li>
+          <li>
+            <h3><a href="https://medium.com/@ismailadadas/geopolitical-arbitrage-turning-the-u-s-iran-conflict-into-a-25-market-gain-520dc34025a1" target="_blank" rel="noopener">Geopolitical Arbitrage: Konflik AS–Iran dan Pasar</a></h3><span class="porsi">Bakso · Mar 2026</span>
+            <p>Bagaimana ketegangan di Selat Hormuz mendorong harga minyak dan saham energi Indonesia seperti ENRG naik sekitar 25% dalam sehari.</p>
+            <div class="tag"><span>Medium</span><span>Geopolitik</span><span>Saham</span></div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="page" id="bumbu">
+      <div class="kartu isi">
+        <h2><small>03 · Bumbu dapur</small>Keahlian</h2>
+        <div class="bumbu">
+          <div><b>Python</b><span class="level">Skripsi</span></div>
+          <div><b>LangChain &amp; RAG</b><span class="level">Skripsi</span></div>
+          <div><b>LLM lokal (Ollama)</b><span class="level">Skripsi</span></div>
+          <div><b>ChromaDB</b><span class="level">Skripsi</span></div>
+          <div><b>Bot Telegram</b><span class="level">Skripsi</span></div>
+          <div><b>Analisis teknikal</b><span class="level">TradingView</span></div>
+          <div><b>Riset pasar &amp; makro</b><span class="level">Medium</span></div>
+          <div><b>Menulis analisis</b><span class="level">Medium</span></div>
+          <div><b>Git &amp; GitHub</b><span class="level">GitHub</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="pesan">
+      <div class="kartu isi">
+        <h2><small>04 · Pesan di sini</small>Mau pesan satu porsi?</h2>
+        <p>Terbuka untuk posisi junior dan magang di bidang data, AI, atau keuangan. Kirim email, atau mampir ke tulisan dan kodeku.</p>
+        <div class="kontak-row">
+          <span class="email" id="email">ismailadadas@gmail.com</span>
+          <button class="salin" id="salin" type="button">Salin email</button>
+        </div>
+        <div class="tautan">
+          <a href="https://github.com/ismailadadas" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://medium.com/@ismailadadas" target="_blank" rel="noopener">Medium</a>
+          <a href="https://www.tradingview.com/chart/BTCUSD/Dh7mqfSr/" target="_blank" rel="noopener">TradingView</a>
+        </div>
+        <footer>
+          <span>© 2026 Azhari Dadas</span>
+          <span>Dimasak dengan Three.js · tanpa MSG</span>
+        </footer>
+      </div>
+    </section>
+  </main>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  // copy button
+  const btn=document.getElementById('salin');
+  btn.addEventListener('click',()=>{
+    const t=document.getElementById('email').textContent;
+    const done=()=>{btn.textContent='Tersalin';setTimeout(()=>btn.textContent='Salin email',1600)};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(done,()=>selectEmail());
+    }else selectEmail();
+    function selectEmail(){const r=document.createRange();r.selectNodeContents(document.getElementById('email'));const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent='Tekan Ctrl+C'}
+  });
+
+  // ---------- full-page jumping ----------
+  const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const viewport=document.getElementById('viewport'),track=document.getElementById('track');
+  const pages=[...document.querySelectorAll('.page')],N=pages.length;
+  const navLinks=[...document.querySelectorAll('nav a')];
+  const pager={f:0,n:N,idx:0,anim:null};
+  const titik=document.getElementById('titik');
+  const names=['Beranda','Resep','Menu','Bumbu','Pesan'];
+  const dots=pages.map((p,j)=>{
+    const b=document.createElement('button');b.type='button';
+    b.innerHTML='<span class="lbl">'+(names[j]||'Hal '+(j+1))+'</span><span class="bar"></span>';
+    b.setAttribute('aria-label','Ke halaman '+(j+1)+': '+(names[j]||''));
+    b.addEventListener('click',()=>goTo(j));titik.appendChild(b);return b;
+  });
+  const dotNo=document.createElement('span'); // page number not shown
+  dots[0].classList.add('aktif');dotNo.textContent='01 / '+String(N).padStart(2,'0');
+  let VH=innerHeight;
+  function setVH(){VH=innerHeight;document.documentElement.style.setProperty('--vh',VH+'px')}
+  setVH();addEventListener('resize',setVH);
+  const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  function goTo(i){
+    i=Math.max(0,Math.min(N-1,i));
+    if(i===pager.idx&&!pager.anim)return;
+    const dist=Math.abs(i-pager.f);
+    pager.anim={from:pager.f,to:i,t0:performance.now(),dur:reduceMotion?1:900+dist*350};
+    pager.idx=i;
+    pages[i].scrollTop=0;
+    const id=pages[i].id;
+    navLinks.forEach(a=>a.classList.toggle('aktif',a.getAttribute('href')==='#'+id));
+    dots.forEach((d,j)=>{d.classList.toggle('aktif',j===i);d.setAttribute('aria-current',j===i?'true':'false')});
+    dotNo.textContent=String(i+1).padStart(2,'0')+' / '+String(N).padStart(2,'0');
+  }
+  function tick(now){
+    const a=pager.anim;
+    if(a){const t=Math.min(1,(now-a.t0)/a.dur);pager.f=a.from+(a.to-a.from)*ease(t);if(t>=1)pager.anim=null}
+    track.style.transform='translate3d(0,'+(-pager.f*VH)+'px,0)';
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  const canScroll=(el,dir)=>dir>0?el.scrollTop+el.clientHeight<el.scrollHeight-2:el.scrollTop>2;
+  let lockUntil=0;
+  addEventListener('wheel',e=>{
+    const dir=Math.sign(e.deltaY);if(!dir)return;
+    if(canScroll(pages[pager.idx],dir))return;   // let a tall page scroll inside first
+    e.preventDefault();
+    const now=performance.now();
+    if(pager.anim||now<lockUntil){lockUntil=now+350;return}  // swallow trackpad momentum
+    if(Math.abs(e.deltaY)<6)return;
+    lockUntil=now+350;goTo(pager.idx+dir);
+  },{passive:false});
+  let ty=null,tEdge={up:false,down:false};
+  addEventListener('touchstart',e=>{ty=e.touches[0].clientY;const pg=pages[pager.idx];tEdge={down:!canScroll(pg,1),up:!canScroll(pg,-1)}},{passive:true});
+  addEventListener('touchend',e=>{
+    if(ty===null)return;const dy=ty-e.changedTouches[0].clientY;ty=null;
+    if(Math.abs(dy)<50||pager.anim)return;
+    if(dy>0&&tEdge.down)goTo(pager.idx+1);
+    if(dy<0&&tEdge.up)goTo(pager.idx-1);
+  },{passive:true});
+  addEventListener('keydown',e=>{
+    const tag=(e.target.tagName||'').toLowerCase();
+    if(tag==='input'||tag==='textarea')return;
+    const pg=pages[pager.idx];
+    if((e.key==='ArrowDown'||e.key==='PageDown'||(e.key===' '&&tag!=='button'))&&!canScroll(pg,1)){e.preventDefault();if(!pager.anim)goTo(pager.idx+1)}
+    else if((e.key==='ArrowUp'||e.key==='PageUp')&&!canScroll(pg,-1)){e.preventDefault();if(!pager.anim)goTo(pager.idx-1)}
+    else if(e.key==='Home'){e.preventDefault();goTo(0)}
+    else if(e.key==='End'){e.preventDefault();goTo(N-1)}
+  });
+  document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{
+    const i=pages.findIndex(p=>'#'+p.id===a.getAttribute('href'));
+    if(i>=0){e.preventDefault();goTo(i)}
+  }));
+  document.addEventListener('focusin',e=>{
+    const i=pages.findIndex(p=>p.contains(e.target));
+    viewport.scrollTop=0;
+    if(i>=0&&i!==pager.idx)goTo(i);
+  });
+  viewport.addEventListener('scroll',()=>{viewport.scrollTop=0});
+  const startHash=location.hash&&pages.findIndex(p=>'#'+p.id===location.hash);
+  if(startHash>0){pager.f=startHash;goTo(startHash)}
+  navLinks.forEach(a=>a.classList.toggle('aktif',a.getAttribute('href')==='#'+pages[pager.idx].id));
+
+  if(typeof THREE==='undefined') return;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canvas=document.getElementById('scene');
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.05;
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(35,1,0.1,100);
+  camera.position.set(0,4.4,8.8);
+  camera.lookAt(0,0.9,0);
+
+  // lights: warm warung lamp
+  scene.add(new THREE.HemisphereLight(0xffe6c4,0x2a1810,0.55));
+  const key=new THREE.DirectionalLight(0xffd29a,1.6);
+  key.position.set(4,8,5);key.castShadow=true;key.shadow.mapSize.set(1024,1024);
+  key.shadow.camera.left=-4;key.shadow.camera.right=4;key.shadow.camera.top=4;key.shadow.camera.bottom=-4;
+  scene.add(key);
+  const rim=new THREE.PointLight(0xe0472c,1.2,20);rim.position.set(-5,3,-4);scene.add(rim);
+  const fill=new THREE.PointLight(0x7fa845,0.4,20);fill.position.set(5,1,-3);scene.add(fill);
+
+  const bowl=new THREE.Group();
+  // turn the painted rooster (canvas x≈300 of 2048) toward the camera
+  const ROOSTER_FACE=Math.atan2(-1.55,8.8)-(300/2048)*Math.PI*2;
+  scene.add(bowl);
+
+  // ---------- ayam jago bowl texture ----------
+  function bowlTexture(){
+    const c=document.createElement('canvas');c.width=2048;c.height=512;
+    const g=c.getContext('2d');
+    g.fillStyle='#f6f2e8';g.fillRect(0,0,2048,512);
+    // rim band (top of canvas = rim)
+    g.fillStyle='#2f6a3a';g.fillRect(0,18,2048,26);
+    g.fillStyle='#c9322a';g.fillRect(0,50,2048,6);
+    g.fillStyle='#2f6a3a';g.fillRect(0,470,2048,10);
+    for(let k=0;k<2;k++){
+      const ox=k*1024;
+      drawRooster(g,ox+300,300,1);
+      drawBanana(g,ox+640,330);
+      drawPeony(g,ox+860,300);
+    }
+    const tex=new THREE.CanvasTexture(c);
+    tex.encoding=THREE.sRGBEncoding;tex.anisotropy=8;
+    return tex;
+  }
+  function drawRooster(g,x,y,s){
+    g.save();g.translate(x,y);g.scale(s,s);
+    // tail
+    g.lineCap='round';
+    const tails=[['#1b1b1b',-150,-110],['#2f6a3a',-175,-70],['#1b1b1b',-170,-20],['#2f6a3a',-150,20]];
+    tails.forEach(([col,tx,ty],i)=>{g.strokeStyle=col;g.lineWidth=16-i*2;g.beginPath();g.moveTo(-60,-10);g.quadraticCurveTo(-110,-150+i*30,tx,ty);g.stroke();});
+    // body
+    g.fillStyle='#d8432a';g.beginPath();g.ellipse(0,0,95,62,-0.2,0,Math.PI*2);g.fill();
+    // wing
+    g.fillStyle='#b5301f';g.beginPath();g.ellipse(-10,5,55,32,-0.3,0,Math.PI*2);g.fill();
+    g.strokeStyle='#1b1b1b';g.lineWidth=4;
+    for(let i=0;i<3;i++){g.beginPath();g.arc(-10,10+i*8,30-i*4,0.2,2.4);g.stroke();}
+    // neck & head
+    g.fillStyle='#e8a33d';g.beginPath();g.moveTo(40,-40);g.quadraticCurveTo(95,-70,80,-120);g.lineTo(115,-120);g.quadraticCurveTo(120,-60,85,-10);g.fill();
+    g.fillStyle='#d8432a';g.beginPath();g.arc(98,-128,24,0,Math.PI*2);g.fill();
+    // comb
+    g.fillStyle='#c9322a';
+    for(let i=0;i<3;i++){g.beginPath();g.arc(84+i*12,-155+i*2,11,0,Math.PI*2);g.fill();}
+    // wattle
+    g.beginPath();g.ellipse(112,-104,7,12,0,0,Math.PI*2);g.fill();
+    // beak
+    g.fillStyle='#f0c23a';g.beginPath();g.moveTo(118,-134);g.lineTo(142,-126);g.lineTo(118,-120);g.fill();
+    // eye
+    g.fillStyle='#1b1b1b';g.beginPath();g.arc(104,-132,4,0,Math.PI*2);g.fill();
+    // legs
+    g.strokeStyle='#e8a33d';g.lineWidth=7;
+    [[-10,55],[25,50]].forEach(([lx,ly])=>{g.beginPath();g.moveTo(lx,ly);g.lineTo(lx+5,ly+60);g.lineTo(lx+25,ly+64);g.moveTo(lx+5,ly+60);g.lineTo(lx-12,ly+66);g.stroke();});
+    g.restore();
+  }
+  function drawBanana(g,x,y){
+    g.save();g.translate(x,y);
+    g.strokeStyle='#5b4a2a';g.lineWidth=16;g.beginPath();g.moveTo(0,120);g.lineTo(6,-40);g.stroke();
+    g.fillStyle='#2f6a3a';
+    [[-1.2,1],[-0.4,1.1],[0.5,1],[1.3,0.9],[2.2,0.8]].forEach(([a,l])=>{
+      g.save();g.translate(6,-40);g.rotate(a-Math.PI/2);
+      g.beginPath();g.ellipse(0,-90*l,26,95*l,0,0,Math.PI*2);g.fill();
+      g.strokeStyle='#1f4a28';g.lineWidth=3;g.beginPath();g.moveTo(0,0);g.lineTo(0,-180*l);g.stroke();
+      g.restore();
+    });
+    g.restore();
+  }
+  function drawPeony(g,x,y){
+    g.save();g.translate(x,y);
+    g.fillStyle='#2f6a3a';
+    for(let i=0;i<3;i++){g.save();g.rotate(i*2.1+.4);g.beginPath();g.ellipse(0,-60,16,40,0,0,Math.PI*2);g.fill();g.restore();}
+    g.fillStyle='#e56b8a';
+    for(let i=0;i<8;i++){g.save();g.rotate(i*Math.PI/4);g.beginPath();g.ellipse(0,-26,18,28,0,0,Math.PI*2);g.fill();g.restore();}
+    g.fillStyle='#c9322a';g.beginPath();g.arc(0,0,14,0,Math.PI*2);g.fill();
+    g.restore();
+  }
+
+  // ---------- bowl geometry ----------
+  const outerPts=[[0,0.02],[0.72,0.02],[0.78,0.2],[0.95,0.24],[1.35,0.5],[1.72,0.95],[1.95,1.42],[2.02,1.58]].map(p=>new THREE.Vector2(p[0],p[1]));
+  const innerPts=[[0,0.3],[0.85,0.34],[1.28,0.58],[1.64,0.98],[1.88,1.44],[1.95,1.58]].map(p=>new THREE.Vector2(p[0],p[1]));
+  const porcelain=new THREE.MeshPhysicalMaterial({color:0xffffff,roughness:0.18,clearcoat:1,clearcoatRoughness:0.08});
+  const outer=new THREE.Mesh(new THREE.LatheGeometry(outerPts,128),new THREE.MeshPhysicalMaterial({map:bowlTexture(),roughness:0.2,clearcoat:1,clearcoatRoughness:0.1,side:THREE.DoubleSide}));
+  outer.castShadow=true;bowl.add(outer);
+  const inner=new THREE.Mesh(new THREE.LatheGeometry(innerPts,128),porcelain.clone());
+  inner.material.side=THREE.DoubleSide;inner.material.color.set(0xf6f2e8);bowl.add(inner);
+  const rimRing=new THREE.Mesh(new THREE.TorusGeometry(1.985,0.045,16,128),new THREE.MeshPhysicalMaterial({color:0x2f6a3a,roughness:0.25,clearcoat:1}));
+  rimRing.rotation.x=Math.PI/2;rimRing.position.y=1.58;bowl.add(rimRing);
+
+  // broth
+  const brothY=1.22;
+  const broth=new THREE.Mesh(new THREE.CircleGeometry(1.78,96),new THREE.MeshPhysicalMaterial({color:0xb86a1c,roughness:0.12,clearcoat:1,transparent:true,opacity:0.94}));
+  broth.rotation.x=-Math.PI/2;broth.position.y=brothY;bowl.add(broth);
+  const brothRaw=new THREE.Color(0xd9953a), brothMixed=new THREE.Color(0x7a3a10);
+
+  // swirl streaks that appear while stirring
+  const swc=document.createElement('canvas');swc.width=swc.height=512;
+  const swg=swc.getContext('2d');swg.translate(256,256);
+  for(let k=0;k<7;k++){
+    swg.beginPath();
+    for(let t=0;t<1;t+=0.01){const r=20+t*230,a=k*0.9+t*5.5;const x=Math.cos(a)*r,y=Math.sin(a)*r;t?swg.lineTo(x,y):swg.moveTo(x,y)}
+    swg.strokeStyle=k%2?'rgba(60,25,5,.8)':'rgba(255,200,110,.7)';swg.lineWidth=6+k%3*4;swg.lineCap='round';swg.stroke();
+  }
+  const swirl=new THREE.Mesh(new THREE.CircleGeometry(1.76,96),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(swc),transparent:true,opacity:0,depthWrite:false}));
+  swirl.rotation.x=-Math.PI/2;swirl.position.y=brothY+0.004;bowl.add(swirl);
+
+  const swirlGroup=new THREE.Group();bowl.add(swirlGroup);   // oil
+  const noodleGroup=new THREE.Group();bowl.add(noodleGroup); // mie
+  const toppings=new THREE.Group();bowl.add(toppings);       // ayam, sawi, daun bawang, pangsit
+  // oil droplets
+  const oilMat=new THREE.MeshBasicMaterial({color:0xf2b347,transparent:true,opacity:0.55});
+  for(let i=0;i<26;i++){
+    const d=new THREE.Mesh(new THREE.CircleGeometry(0.03+Math.random()*0.06,20),oilMat);
+    const a=Math.random()*Math.PI*2,r=Math.sqrt(Math.random())*1.65;
+    d.rotation.x=-Math.PI/2;d.position.set(Math.cos(a)*r,brothY+0.006,Math.sin(a)*r);swirlGroup.add(d);
+  }
+
+  // seeded random for stable composition
+  let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646};
+
+  // noodles: long smooth springy strands that wind around the bowl, ends tucked under the broth
+  const noodleMat=new THREE.MeshStandardMaterial({color:0xf2c14e,roughness:0.42});
+  const noodleMats=[0xf2c451,0xeab545,0xe0a73c].map(c=>new THREE.MeshStandardMaterial({color:c,roughness:0.42}));
+  for(let n=0;n<42;n++){
+    const pts=[];
+    const a0=rnd()*Math.PI*2, span=(2.5+rnd()*3.5)*(rnd()<.5?-1:1);
+    const rBase=0.35+rnd()*0.9, rAmp=0.15+rnd()*0.3, rFreq=1.5+rnd()*3, rPh=rnd()*6.28;
+    const crimpF=28+rnd()*14, crimpPh=rnd()*6.28, lift=0.1+rnd()*0.08;
+    const S=90;
+    for(let i=0;i<=S;i++){
+      const t=i/S;
+      const a=a0+span*t;
+      let r=rBase+rAmp*Math.sin(t*rFreq*Math.PI+rPh)+0.035*Math.sin(t*crimpF+crimpPh); // gentle wave + mie keriting crimp
+      r=Math.min(1.5,Math.max(0.12,r));
+      const y=brothY-0.07+lift*Math.pow(Math.sin(Math.PI*t),0.6)+0.018*Math.cos(t*crimpF*0.9+crimpPh);
+      pts.push(new THREE.Vector3(Math.sin(a)*r,y,Math.cos(a)*r));
+    }
+    const curve=new THREE.CatmullRomCurve3(pts,false,'centripetal');
+    const m=new THREE.Mesh(new THREE.TubeGeometry(curve,220,0.03,8,false),noodleMats[n%3]);
+    m.castShadow=true;noodleGroup.add(m);
+  }
+
+  // chicken chunks (ayam kecap)
+  const chickenMat=new THREE.MeshStandardMaterial({color:0x7a3f16,roughness:0.55});
+  const chickenMat2=new THREE.MeshStandardMaterial({color:0x5e2e10,roughness:0.5});
+  for(let i=0;i<22;i++){
+    const geo=new THREE.DodecahedronGeometry(0.1+rnd()*0.06,0);
+    const m=new THREE.Mesh(geo,rnd()>0.5?chickenMat:chickenMat2);
+    const a=-0.6+rnd()*1.4,r=0.35+rnd()*0.75;
+    m.position.set(Math.cos(a)*r,brothY+0.16+rnd()*0.08,Math.sin(a)*r);
+    m.rotation.set(rnd()*3,rnd()*3,rnd()*3);m.scale.set(1.3,0.8,1);m.castShadow=true;toppings.add(m);
+  }
+
+  // sawi (bok choy)
+  const leafShape=new THREE.Shape();
+  leafShape.moveTo(0,0);leafShape.bezierCurveTo(0.35,0.2,0.4,0.9,0,1.2);leafShape.bezierCurveTo(-0.4,0.9,-0.35,0.2,0,0);
+  const leafGeo=new THREE.ShapeGeometry(leafShape,16);
+  const leafMat=new THREE.MeshStandardMaterial({color:0x4f8a2e,roughness:0.5,side:THREE.DoubleSide});
+  const stemMat=new THREE.MeshStandardMaterial({color:0xcfe3a8,roughness:0.5});
+  [].forEach(([a,r],i)=>{ // sawi removed
+    const L=new THREE.Group();
+    const leaf=new THREE.Mesh(leafGeo,leafMat);leaf.rotation.x=-Math.PI/2+0.12;leaf.scale.setScalar(0.8);L.add(leaf);
+    const stem=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.09,0.55,10),stemMat);stem.rotation.x=Math.PI/2;stem.position.z=0.22;L.add(stem);
+    L.position.set(Math.cos(a)*r,brothY+0.2+i*0.02,Math.sin(a)*r);L.rotation.y=-a+Math.PI/2+(i-1)*0.4;
+    L.traverse(o=>o.castShadow=true);toppings.add(L);
+  });
+
+  // daun bawang: thin hollow slices resting on top of the noodles
+  const scMat=new THREE.MeshStandardMaterial({color:0x6fb83a,roughness:0.45,side:THREE.DoubleSide});
+  const scMatPale=new THREE.MeshStandardMaterial({color:0xcfe79a,roughness:0.45,side:THREE.DoubleSide});
+  const scGeo=new THREE.CylinderGeometry(0.048,0.048,0.022,16,1,true);
+  for(let i=0;i<34;i++){
+    const m=new THREE.Mesh(scGeo,rnd()<0.3?scMatPale:scMat);
+    const a=rnd()*Math.PI*2,r=0.15+Math.sqrt(rnd())*1.3;
+    m.position.set(Math.sin(a)*r,brothY+0.1+rnd()*0.05,Math.cos(a)*r);
+    m.rotation.set((rnd()-.5)*0.5,rnd()*3,(rnd()-.5)*0.5);
+    m.scale.setScalar(0.8+rnd()*0.5);toppings.add(m);
+  }
+
+  // pangsit (fried wonton)
+  const pangMat=new THREE.MeshStandardMaterial({color:0xd99a3f,roughness:0.7,side:THREE.DoubleSide});
+  [[4.2,1.05],[4.8,0.8]].forEach(([a,r])=>{
+    const m=new THREE.Mesh(new THREE.ConeGeometry(0.28,0.22,4,1,true),pangMat);
+    m.position.set(Math.cos(a)*r,brothY+0.24,Math.sin(a)*r);m.rotation.set(0.3,a,0.2);m.castShadow=true;toppings.add(m);
+  });
+
+  // ---------- floating physics: each piece drifts in the whirlpool on its own ----------
+  const floaters=toppings.children.map(c=>{
+    const r=Math.hypot(c.position.x,c.position.z);
+    return {o:c,r,home:r,a:Math.atan2(c.position.x,c.position.z),y:c.position.y,w:0,ph:rnd()*6.28,
+      k:0.75/(0.55+r)*(0.8+rnd()*0.4), lag:1.6+rnd()*1.4, spin:(rnd()-.5)*1.2};
+  });
+  const strands=noodleGroup.children.map(m=>({o:m,w:0,k:0.35+rnd()*0.45,lag:1.2+rnd()*1.2,ph:rnd()*6.28}));
+  const qTmp=new THREE.Quaternion(),yAxis=new THREE.Vector3(0,1,0);
+  let swirlW=0;
+
+  // ---------- sumpit that stirs ----------
+  const stir=new THREE.Group();bowl.add(stir);
+  const LIFT_Y=2.3;
+  const pivot=new THREE.Group();pivot.position.set(0.85,LIFT_Y,0);stir.add(pivot); // pivot = chopstick tips
+  const sticks=new THREE.Group();pivot.add(sticks);
+  const woodMat=new THREE.MeshStandardMaterial({color:0xb07a44,roughness:0.6});
+  [-0.06,0.06].forEach((o,i)=>{
+    const s=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.03,4.2,12),woodMat);
+    s.position.set(o,2.1,0);s.rotation.z=i?-0.02:0.02;s.castShadow=true;sticks.add(s);
+  });
+  sticks.rotation.z=-Math.PI/3; // 30° from the table, leaning outward over the rim
+  // noodles hanging from the tips (visible while lifted)
+  const hang=new THREE.Group();pivot.add(hang);
+  const hangLen=LIFT_Y-brothY;
+  for(let n=0;n<9;n++){
+    const pts=[];
+    const ox=(rnd()-.5)*0.16,oz=(rnd()-.5)*0.16;
+    for(let i=0;i<=8;i++){
+      const t=i/8;
+      pts.push(new THREE.Vector3(ox+Math.sin(t*6+n)*0.06-t*0.12,-t*hangLen,oz+Math.cos(t*5+n)*0.06));
+    }
+    const m=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),40,0.03,6,false),noodleMat);
+    m.castShadow=true;hang.add(m);
+  }
+
+  // ---------- "siap saji" burst ----------
+  const glow=new THREE.PointLight(0xffb347,0,9);glow.position.set(0,2.2,0);bowl.add(glow);
+  const ripple=new THREE.Mesh(new THREE.RingGeometry(0.9,1,64),new THREE.MeshBasicMaterial({color:0xffe2a8,transparent:true,opacity:0,depthWrite:false}));
+  ripple.rotation.x=-Math.PI/2;ripple.position.y=brothY+0.03;bowl.add(ripple);
+  const bits=[];
+  const bitDefs=[
+    [()=>new THREE.BoxGeometry(0.07,0.02,0.05),new THREE.MeshStandardMaterial({color:0xe0472c,roughness:.4}),22], // cabai
+    [()=>new THREE.SphereGeometry(0.035,10,8),new THREE.MeshStandardMaterial({color:0xffc24d,emissive:0xff9a1f,emissiveIntensity:.8}),30], // minyak
+    [()=>new THREE.DodecahedronGeometry(0.07,0),chickenMat,10]                                  // ayam
+  ];
+  bitDefs.forEach(([geo,mat,count])=>{for(let i=0;i<count;i++){const m=new THREE.Mesh(geo(),mat);m.visible=false;m.userData={v:new THREE.Vector3(),s:new THREE.Vector3(),life:0};bowl.add(m);bits.push(m);}});
+  const puffs=[];
+  for(let i=0;i<22;i++){
+    const m=new THREE.Sprite(new THREE.SpriteMaterial({map:steamTexPlaceholder(),transparent:true,depthWrite:false,opacity:0}));
+    m.userData={x:0,z:0,t:1,sp:0};bowl.add(m);puffs.push(m);
+  }
+  function steamTexPlaceholder(){return null}
+  function burst(){
+    bits.forEach(m=>{
+      const a=rnd()*Math.PI*2,r=rnd()*1.2,out=0.8+rnd()*1.8;
+      m.position.set(Math.cos(a)*r,brothY+0.2,Math.sin(a)*r);
+      m.userData.v.set(Math.cos(a)*out,3+rnd()*3.5,Math.sin(a)*out);
+      m.userData.s.set(rnd()*8,rnd()*8,rnd()*8);
+      m.userData.life=1.6+rnd()*1.2;m.visible=true;m.scale.setScalar(1);
+    });
+    puffs.forEach(m=>{const a=rnd()*Math.PI*2,r=rnd()*1.3;m.userData.x=Math.cos(a)*r;m.userData.z=Math.sin(a)*r;m.userData.t=-rnd()*0.4;m.userData.sp=0.5+rnd()*0.5;});
+  }
+
+  // steam sprites
+  const sc=document.createElement('canvas');sc.width=sc.height=128;
+  const sg=sc.getContext('2d');const grd=sg.createRadialGradient(64,64,0,64,64,64);
+  grd.addColorStop(0,'rgba(255,245,230,.9)');grd.addColorStop(1,'rgba(255,245,230,0)');sg.fillStyle=grd;sg.fillRect(0,0,128,128);
+  const steamTex=new THREE.CanvasTexture(sc);
+  puffs.forEach(m=>{m.material.map=steamTex;m.material.needsUpdate=true});
+  const steam=[];
+  for(let i=0;i<34;i++){
+    const m=new THREE.Sprite(new THREE.SpriteMaterial({map:steamTex,transparent:true,depthWrite:false,opacity:0}));
+    m.userData={t:rnd(),x:(rnd()-.5)*2.2,z:(rnd()-.5)*2.2,sp:0.08+rnd()*0.08,sw:rnd()*6};
+    bowl.add(m);steam.push(m);
+  }
+
+  // table shadow catcher
+  const shadow=new THREE.Mesh(new THREE.PlaneGeometry(14,14),new THREE.ShadowMaterial({opacity:0.35}));
+  shadow.rotation.x=-Math.PI/2;shadow.receiveShadow=true;bowl.add(shadow);
+
+  // ---------- Beranda extras: kecap manis, saus sambal, small bowls of sambal and kuah ----------
+  const props=new THREE.Group();scene.add(props);
+  // label printed once, on the front arc of the bottle, text auto-fitted so it never overlaps or clips
+  const LABEL_ARC=Math.PI*0.9;
+  function labelTex(bg,fg,line1,line2,accent){
+    const W2=1024,H2=640;
+    const c=document.createElement('canvas');c.width=W2;c.height=H2;const g=c.getContext('2d');
+    const fit=(txt,font,maxW,start)=>{let px=start;do{g.font=font.replace('{}',px);px-=2}while(g.measureText(txt).width>maxW&&px>10);};
+    const draw=()=>{
+      g.clearRect(0,0,W2,H2);
+      g.fillStyle=bg;g.fillRect(0,0,W2,H2);
+      g.fillStyle=accent;g.fillRect(0,0,W2,40);g.fillRect(0,H2-40,W2,40);
+      g.fillStyle=fg;g.textAlign='center';g.textBaseline='middle';
+      fit(line1,'{}px "Titan One", "Arial Black", sans-serif',W2*0.84,190);g.fillText(line1,W2/2,H2*0.44);
+      fit(line2,'500 {}px "Roboto", sans-serif',W2*0.7,56);g.globalAlpha=.85;g.fillText(line2,W2/2,H2*0.72);g.globalAlpha=1;
+      t.needsUpdate=true;
+    };
+    const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;draw();
+    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(draw);
+    t.userData={bg};
+    return t;
+  }
+  function makeBottle(o){
+    const B=new THREE.Group();
+    const prof=[[0,0],[o.r,0],[o.r+0.02,0.05],[o.r+0.02,o.h],[o.r*0.9,o.h+0.12],[o.neck*1.4,o.h+0.35],[o.neck,o.h+0.55],[o.neck,o.h+0.75]].map(p=>new THREE.Vector2(p[0],p[1]));
+    const glass=new THREE.MeshPhysicalMaterial({color:o.color,roughness:o.rough,clearcoat:1,clearcoatRoughness:0.08});
+    const body=new THREE.Mesh(new THREE.LatheGeometry(prof,48),glass);body.castShadow=true;B.add(body);
+    // plain band all the way round, printed face only on the front arc (centred on +z, toward the camera)
+    const band=new THREE.Mesh(new THREE.CylinderGeometry(o.r+0.028,o.r+0.028,o.h*0.5,48,1,true),new THREE.MeshStandardMaterial({color:o.label.userData.bg,roughness:0.6}));
+    band.position.y=o.h*0.45;B.add(band);
+    const label=new THREE.Mesh(new THREE.CylinderGeometry(o.r+0.034,o.r+0.034,o.h*0.5,48,1,true,-LABEL_ARC/2,LABEL_ARC),new THREE.MeshStandardMaterial({map:o.label,roughness:0.6}));
+    label.position.y=o.h*0.45;B.add(label);
+    const cap=new THREE.Mesh(new THREE.CylinderGeometry(o.neck+0.03,o.neck+0.03,0.22,24),new THREE.MeshStandardMaterial({color:o.cap,roughness:0.35}));
+    cap.position.y=o.h+0.86;cap.castShadow=true;B.add(cap);
+    if(o.nozzle){const nz=new THREE.Mesh(new THREE.ConeGeometry(o.neck*0.8,0.28,20),cap.material);nz.position.y=o.h+1.1;B.add(nz)}
+    return B;
+  }
+  function makeSmallBowl(fillColor,fillTex,opacity){
+    const S=new THREE.Group();
+    const out=[[0,0.02],[0.3,0.02],[0.33,0.08],[0.5,0.2],[0.64,0.42],[0.68,0.5]].map(p=>new THREE.Vector2(p[0],p[1]));
+    const inn=[[0,0.1],[0.34,0.13],[0.52,0.28],[0.63,0.5]].map(p=>new THREE.Vector2(p[0],p[1]));
+    const m1=new THREE.Mesh(new THREE.LatheGeometry(out,48),new THREE.MeshPhysicalMaterial({color:0xf6f2e8,roughness:0.2,clearcoat:1,side:THREE.DoubleSide}));
+    const m2=new THREE.Mesh(new THREE.LatheGeometry(inn,48),new THREE.MeshPhysicalMaterial({color:0xf6f2e8,roughness:0.2,side:THREE.DoubleSide}));
+    const rim=new THREE.Mesh(new THREE.TorusGeometry(0.66,0.02,10,48),new THREE.MeshStandardMaterial({color:0x2f6a3a,roughness:0.3}));
+    rim.rotation.x=Math.PI/2;rim.position.y=0.5;
+    const fill=new THREE.Mesh(new THREE.CircleGeometry(0.57,40),new THREE.MeshPhysicalMaterial({color:fillColor,map:fillTex,roughness:0.15,clearcoat:1,transparent:opacity<1,opacity}));
+    fill.rotation.x=-Math.PI/2;fill.position.y=0.4;
+    m1.castShadow=true;S.add(m1,m2,rim,fill);return S;
+  }
+  function speckTex(base,dots,n,size){
+    const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');
+    g.fillStyle=base;g.fillRect(0,0,256,256);
+    for(let i=0;i<n;i++){g.fillStyle=dots[i%dots.length];g.beginPath();g.ellipse(rnd()*256,rnd()*256,size*(0.5+rnd()),size*(0.3+rnd()*0.5),rnd()*3,0,Math.PI*2);g.fill()}
+    const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t;
+  }
+  const kecap=makeBottle({r:0.3,h:1.15,neck:0.1,color:0x1c0c05,rough:0.12,cap:0xe8b72c,
+    label:labelTex('#f2c23a','#3a1a08','KECAP MANIS','manis · legit · kental','#c9322a')});
+  const saus=makeBottle({r:0.28,h:1.05,neck:0.09,color:0xc8321c,rough:0.3,cap:0xf4efe4,nozzle:true,
+    label:labelTex('#f4efe4','#c9322a','SAUS SAMBAL','pedas · asli cabai','#2f6a3a')});
+  const sambalBowl=makeSmallBowl(0xffffff,speckTex('#c52a14',['#e8561c','#f4c03a','#8e1a0c'],140,5),1);
+  const kuahBowl=makeSmallBowl(0xffffff,speckTex('#c07a24',['#f2b347','#e8a33d','#6fb83a'],60,7),0.95);
+  const propList=[
+    {o:kecap,     base:new THREE.Vector3(-2.55,0,-1.1), ph:0.0, spin:0.25, tilt:0.06},
+    {o:saus,      base:new THREE.Vector3( 2.45,0,-1.35),ph:1.7, spin:-0.2, tilt:0.07},
+    {o:sambalBowl,base:new THREE.Vector3(-2.35,0, 1.45),ph:3.1, spin:0.35, tilt:0.04},
+    {o:kuahBowl,  base:new THREE.Vector3( 2.2, 0, 1.55),ph:4.4, spin:-0.3, tilt:0.04},
+  ];
+  propList.forEach(p=>{p.o.position.copy(p.base);props.add(p.o)});
+  const backOut=t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)};
+
+  // ---------- layout & motion ----------
+  let W=0,H=0,mobile=false;
+  function resize(){
+    W=innerWidth;H=innerHeight;mobile=W<720;
+    renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
+  }
+  addEventListener('resize',resize);resize();
+
+  let mx=0,my=0,tmx=0,tmy=0;
+  addEventListener('pointermove',e=>{tmx=(e.clientX/W-.5);tmy=(e.clientY/H-.5)});
+
+  // positions per section: hero(right), resep(left), menu(right), bumbu(left), pesan(center-right)
+  // responsive fit: size and place the scene from the real visible area, so it shrinks with the window
+  const CAM_DIST=camera.position.distanceTo(new THREE.Vector3(0,0.9,0));
+  let cur=null;
+  function target(){
+    const p=Math.min(1,Math.max(0,pager.f/(pager.n-1)));
+    const halfH=Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*CAM_DIST;
+    const halfW=halfH*camera.aspect;
+    const liftNow=1-smooth(0,0.45,pager.f);
+    const need=4.4+1.7*liftNow;          // scene width in bowl units: bowl + chopsticks, wider on Beranda (bottles, small bowls)
+    const tall=3.9;                      // bowl + chopsticks height in bowl units
+    const wide=W>=720&&camera.aspect>1.05;
+    const tablet=Math.min(W,H)>=600&&Math.max(W,H)<=1400;
+    let x,y,s;
+    if(wide){
+      const marginW=(140/W)*2*halfW;     // keep clear of the page indicator
+      const availW=halfW*2*0.52-marginW;
+      s=Math.max(0.3,Math.min(1.05,availW/need,(halfH*2*0.78)/tall));
+      x=halfW-marginW-need*s/2;
+      y=tablet?-halfH*0.24:-0.15;          // landscape tablet: sit a bit lower
+    }else{
+      x=0;
+      if(W>=600){                          // portrait tablet: bowl in the lower part, text above
+        s=Math.max(0.25,Math.min(0.9,(halfW*2*0.9)/need,(halfH*2*0.4)/tall));
+        y=-halfH*0.4;
+      }else{                               // phone
+        s=Math.max(0.25,Math.min(0.9,(halfW*2*0.94)/need,(halfH*2*0.42)/tall));
+        y=halfH*0.3;
+      }
+    }
+    return {x,y,s,rot:p*Math.PI,p};
+  }
+  const smooth=(a,b,v)=>{const t=Math.min(1,Math.max(0,(v-a)/(b-a)));return t*t*(3-2*t)};
+  const meter=document.getElementById('meter'),meterNum=document.getElementById('meterNum'),meterBar=document.getElementById('meterBar'),toast=document.getElementById('toast');
+  let curStir=0,served=false,burstT=99,lastPct=-1;
+
+  const clock=new THREE.Clock();
+  function frame(){
+    const dt=Math.min(clock.getDelta(),0.05),time=clock.elapsedTime;
+    const tg=target(),p=tg.p;
+    const k=reduce?1:1-Math.pow(0.001,dt);
+    if(!cur)cur={x:tg.x,y:tg.y,s:tg.s,rot:tg.rot};
+    cur.x+=(tg.x-cur.x)*k;cur.y+=(tg.y-cur.y)*k;cur.s+=(tg.s-cur.s)*k;cur.rot+=(tg.rot-cur.rot)*k;
+    mx+=(tmx-mx)*k;my+=(tmy-my)*k;
+
+    // --- stirring driven by scroll ---
+    // each page jump = 1.5 smooth turns of the chopsticks (follows the eased page transition)
+    // Beranda: chopsticks hold noodles up. Leaving it, they lower first, then start stirring.
+    const lift=1-smooth(0,0.45,pager.f);
+    const stirP=Math.min(1,Math.max(0,(pager.f-0.45)/(pager.n-1-0.45)));
+    const targetStir=stirP*Math.PI*2*6;
+    const kStir=1;
+    const prev=curStir;curStir+=(targetStir-curStir)*kStir;
+    const speed=Math.min(1,Math.abs(curStir-prev)/Math.max(dt,1e-3)/6);
+    stir.rotation.y=-curStir-ROOSTER_FACE*lift; // on Beranda the chopsticks lean toward screen-right
+    pivot.position.x=(0.8+Math.sin(curStir*1.7)*0.35)*(1-lift)-0.3*lift;
+    sticks.rotation.x=0;
+    sticks.rotation.z=-(Math.PI/3)*lift; // Beranda: 30° from the table; stirring: straight up (90°)
+    // lifting pose: slow pull up and down with noodles hanging from the tips
+    const pull=reduce?0:Math.sin(time*1.3)*0.18+Math.sin(time*0.7)*0.06;
+    pivot.position.y=brothY-0.12+lift*(LIFT_Y-brothY+0.12+pull);
+    // Beranda: noodles gripped higher up the chopsticks (up-right on screen)
+    const up=0.165*lift;
+    hang.position.set(up*0.866,up*0.5,0);
+    const hs=(pivot.position.y+hang.position.y-brothY)/hangLen;
+    hang.visible=hs>0.05;hang.scale.y=Math.max(0.001,hs);
+    hang.rotation.z=reduce?0:Math.sin(time*1.3-0.6)*0.05*lift;   // strands swing a little
+    hang.rotation.x=reduce?0:Math.cos(time*1.1)*0.04*lift;
+    // food follows the chopsticks
+    // whirlpool: inner pieces turn faster, everything lags behind and coasts to a stop
+    const stirVel=-(curStir-prev)/Math.max(dt,1e-3);   // rad/s, same sign as chopstick motion
+    const tipA=Math.PI/2-curStir, tipR=pivot.position.x;
+    const tipX=Math.sin(tipA)*tipR, tipZ=Math.cos(tipA)*tipR;
+    floaters.forEach(f=>{
+      f.w+=(stirVel*f.k-f.w)*(1-Math.exp(-dt*f.lag));
+      f.a+=f.w*dt;
+      // chopsticks nudge nearby pieces outward
+      let x=Math.sin(f.a)*f.r, z=Math.cos(f.a)*f.r;
+      const dx=x-tipX,dz=z-tipZ,d=Math.hypot(dx,dz);
+      if(d<0.42&&d>1e-4){const push=(0.42-d)*2.2*dt*Math.min(1,Math.abs(stirVel)/4+0.2);x+=dx/d*push;z+=dz/d*push;f.a=Math.atan2(x,z);f.r=Math.hypot(x,z)}
+      f.r+=(f.home-f.r)*(1-Math.exp(-dt*0.6));
+      f.r=Math.min(1.55,Math.max(0.12,f.r));
+      f.o.position.set(Math.sin(f.a)*f.r,f.y+Math.sin(time*1.6+f.ph)*0.012+Math.sin(time*5+f.ph)*0.018*speed,Math.cos(f.a)*f.r);
+      qTmp.setFromAxisAngle(yAxis,(f.w*1.3+f.spin*Math.abs(f.w)*0.3)*dt);
+      f.o.quaternion.premultiply(qTmp);
+    });
+    strands.forEach(s=>{
+      s.w+=(stirVel*s.k-s.w)*(1-Math.exp(-dt*s.lag));
+      s.o.rotation.y+=s.w*dt;
+      s.o.position.y=Math.sin(time*1.4+s.ph)*0.008+Math.sin(time*4+s.ph)*0.02*speed;
+    });
+    swirlW+=(stirVel*0.9-swirlW)*(1-Math.exp(-dt*2));
+    swirlGroup.rotation.y+=swirlW*0.8*dt;
+    swirl.rotation.z+=swirlW*dt;
+    swirl.material.opacity=Math.min(0.5,Math.abs(swirlW)/9+stirP*0.1);
+    broth.material.color.copy(brothRaw).lerp(brothMixed,stirP);
+
+    // --- "siap saji" moment at the bottom ---
+    if(p>0.995&&!served){served=true;burstT=0;burst();toast.classList.add('show')}
+    if(p<0.9&&served){served=false;toast.classList.remove('show')}
+    burstT+=dt;
+    const pulse=burstT<2?Math.exp(-burstT*2.2):0;
+    glow.intensity=pulse*6;
+    ripple.material.opacity=burstT<1.4?(1-burstT/1.4)*0.7:0;
+    ripple.scale.setScalar(0.2+Math.min(burstT,1.4)*1.3);
+    const hop=burstT<0.6?Math.sin(burstT/0.6*Math.PI)*0.28:0;
+    bits.forEach(m=>{
+      if(!m.visible)return;const u=m.userData;
+      u.life-=dt;u.v.y-=7.5*dt;m.position.addScaledVector(u.v,dt);
+      m.rotation.x+=u.s.x*dt;m.rotation.y+=u.s.y*dt;
+      if(m.position.y<brothY&&Math.hypot(m.position.x,m.position.z)<1.7){m.position.y=brothY;u.v.multiplyScalar(0.2);u.v.y=Math.abs(u.v.y)*0.3}
+      m.scale.setScalar(Math.min(1,Math.max(0,u.life/0.5)));
+      if(u.life<=0)m.visible=false;
+    });
+    puffs.forEach(m=>{
+      const u=m.userData;u.t+=dt*u.sp;
+      if(u.t<0||u.t>1){m.material.opacity=0;return}
+      m.position.set(u.x*(1+u.t),brothY+0.4+u.t*4,u.z*(1+u.t));
+      m.scale.setScalar(1+u.t*3.5);m.material.opacity=Math.sin(u.t*Math.PI)*0.5;
+    });
+
+    const pct=Math.round(stirP*100);
+    if(pct!==lastPct){lastPct=pct;meterNum.textContent=pct;meterBar.style.transform='scaleX('+stirP+')';meter.classList.toggle('done',pct>=100)}
+
+    // bowl stays still while stirring (only the serving hop at the end)
+    bowl.position.set(cur.x,cur.y+hop,0);
+    bowl.scale.setScalar(cur.s*(1+pulse*0.04));
+    bowl.rotation.set(0,ROOSTER_FACE,0);
+    // extras follow the main bowl, show only on Beranda, pop in one by one and leave when the page changes
+    props.position.set(bowl.position.x,cur.y,0);props.scale.setScalar(cur.s);
+    propList.forEach((pr,i)=>{
+      const v=smooth(i*0.1,0.55+i*0.1,lift);
+      const o=pr.o;o.visible=v>0.01;
+      if(!o.visible)return;
+      const s=backOut(v);
+      o.scale.setScalar(Math.max(0.001,s));
+      const bob=reduce?0:Math.sin(time*1.3+pr.ph)*0.07;
+      o.position.set(pr.base.x*(1+(1-v)*0.35),(1-v)*-0.8+Math.max(0,bob)*v,pr.base.z*(1+(1-v)*0.35));
+      // face the camera so the label stays readable; only a gentle sway, no full spin
+      const wx=props.position.x+o.position.x*props.scale.x, wz=o.position.z*props.scale.x;
+      const face=Math.atan2(camera.position.x-wx,camera.position.z-wz);
+      o.rotation.set(reduce?0:Math.sin(time*1.1+pr.ph)*pr.tilt,face+(reduce?0:Math.sin(time*0.8+pr.ph)*0.28)+(1-v)*2.5,reduce?0:Math.cos(time*0.9+pr.ph)*pr.tilt);
+    });
+    steam.forEach(m=>{
+      const u=m.userData;u.t=(u.t+dt*u.sp*(reduce?0:1)*(1+speed*2))%1;
+      const t=u.t;
+      m.position.set(u.x*(1-t*0.3)+Math.sin(time*0.8+u.sw)*0.25*t,brothY+0.3+t*3.2,u.z*(1-t*0.3));
+      m.scale.setScalar(0.5+t*1.6);
+      m.material.opacity=Math.sin(t*Math.PI)*(0.16+speed*0.14);
+    });
+    renderer.render(scene,camera);
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+</body>
+</html>

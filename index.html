@@ -66,7 +66,7 @@ h1 .sambal{color:var(--sambal)}
   font:600 12px/1 var(--body);letter-spacing:.02em;color:var(--kecap);background:var(--kuah);
   padding:8px 12px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.35);
   opacity:0;transition:opacity .35s;will-change:transform}
-.pour-tip::after{content:"";position:absolute;left:50%;bottom:-6px;width:12px;height:12px;background:var(--kuah);transform:translateX(-50%) rotate(45deg);border-radius:2px}
+.pour-tip::after{content:"";position:absolute;left:calc(50% + var(--ax,0px));bottom:-6px;width:12px;height:12px;background:var(--kuah);transform:translateX(-50%) rotate(45deg);border-radius:2px}
 .pour-tip.show{opacity:1}
 @keyframes drip{0%,100%{transform:scaleY(.4);transform-origin:top}50%{transform:scaleY(1)}}
 
@@ -407,8 +407,8 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
       <span class="eyebrow">Fresh graduate · Information Systems, BINUS</span>
       <h1>Azhari <span class="sambal">Dadas</span></h1>
       <p class="lede">An Information Systems graduate who loves two things, a bowl of mie ayam and reading the markets. I turn data into analysis, and AI into tools people actually use.</p>
-      <span class="hint"><i></i> Scroll or press the down arrow to stir</span>
-      <span class="hint hint-pour"><i></i> Click the sauces, bowls or MSG to pour them into the mie ayam</span>
+      <span class="hint"><i></i> <span id="hintStir">Scroll or press the down arrow to stir</span></span>
+      <span class="hint hint-pour"><i></i> <span id="hintPour">Click the sauces, bowls or MSG to pour them into the mie ayam</span></span>
     </div>
     </section>
 
@@ -1124,6 +1124,12 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
   function toSwirl(v){return swirlGroup.worldToLocal(props.localToWorld(tmpV2.copy(v)))}
 
   let pouredOnce=false;
+  // touch screens (phones, iPad): say "tap" and "swipe" instead of "click" and "arrow key"
+  if(matchMedia('(hover: none), (pointer: coarse)').matches){
+    const t=document.getElementById('pourTip');if(t)t.textContent='Tap me to pour into the bowl!';
+    const hp=document.getElementById('hintPour');if(hp)hp.textContent='Tap the sauces, bowls or MSG to pour them into the mie ayam';
+    const hs=document.getElementById('hintStir');if(hs)hs.textContent='Swipe up to stir';
+  }
   function startPour(pr,time){
     pouredOnce=true;
     if(pr.pour)return;
@@ -1453,7 +1459,10 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
       if(showTip){
         const v=new THREE.Vector3();propList[0].o.getWorldPosition(v);v.y+=2.45*props.scale.x;v.project(camera);
         const bob=reduce?0:Math.sin(time*2.4)*4;
-        tip.style.transform=`translate(${(v.x+1)/2*W}px,${(1-v.y)/2*H+bob}px) translate(-50%,-100%)`;
+        // keep the bubble on screen (phones), and slide its little arrow so it still points at the bottle
+        const px=(v.x+1)/2*W,hw=tip.offsetWidth/2,cx=Math.min(Math.max(px,hw+12),W-hw-12);
+        tip.style.setProperty('--ax',(px-cx)+'px');
+        tip.style.transform=`translate(${cx}px,${(1-v.y)/2*H+bob}px) translate(-50%,-100%)`;
       }
       tip.classList.toggle('show',showTip);
     }

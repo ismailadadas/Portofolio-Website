@@ -59,6 +59,15 @@ h1 .sambal{color:var(--sambal)}
 .lede{font-size:clamp(17px,2vw,20px);max-width:34ch;color:var(--porselen);margin:0}
 .hint{font-family:var(--mono);font-size:12px;color:var(--asap);display:flex;align-items:center;gap:10px}
 .hint i{display:inline-block;width:1px;height:28px;background:var(--kuah);animation:drip 1.8s ease-in-out infinite}
+.hint-pour{margin-top:-12px}
+.hint-pour i{background:var(--sambal)}
+/* speech bubble that floats over a bottle on Home until the first pour */
+.pour-tip{position:fixed;left:0;top:0;z-index:4;pointer-events:none;white-space:nowrap;
+  font:600 12px/1 var(--body);letter-spacing:.02em;color:var(--kecap);background:var(--kuah);
+  padding:8px 12px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.35);
+  opacity:0;transition:opacity .35s;will-change:transform}
+.pour-tip::after{content:"";position:absolute;left:50%;bottom:-6px;width:12px;height:12px;background:var(--kuah);transform:translateX(-50%) rotate(45deg);border-radius:2px}
+.pour-tip.show{opacity:1}
 @keyframes drip{0%,100%{transform:scaleY(.4);transform-origin:top}50%{transform:scaleY(1)}}
 
 .kartu{background:rgba(23,15,10,.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--garis);border-radius:18px;padding:clamp(22px,3.5vw,36px);display:grid;gap:18px}
@@ -375,6 +384,7 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
 <div class="grain"></div>
 
 <div class="titik" id="titik" aria-label="Pages"></div>
+<div class="pour-tip" id="pourTip" aria-hidden="true">Click me to pour into the bowl!</div>
 <div class="toast" id="toast" role="status">
   <strong>Mie ayam is served!</strong>
   <span>All mixed and ready. Enjoy, and feel free to send me an email.</span>
@@ -398,6 +408,7 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
       <h1>Azhari <span class="sambal">Dadas</span></h1>
       <p class="lede">An Information Systems graduate who loves two things, a bowl of mie ayam and reading the markets. I turn data into analysis, and AI into tools people actually use.</p>
       <span class="hint"><i></i> Scroll or press the down arrow to stir</span>
+      <span class="hint hint-pour"><i></i> Click the sauces, bowls or MSG to pour them into the mie ayam</span>
     </div>
     </section>
 
@@ -1112,7 +1123,9 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
   const tmpV=new THREE.Vector3(),tmpV2=new THREE.Vector3(),qTilt=new THREE.Quaternion(),upV=new THREE.Vector3(0,1,0);
   function toSwirl(v){return swirlGroup.worldToLocal(props.localToWorld(tmpV2.copy(v)))}
 
+  let pouredOnce=false;
   function startPour(pr,time){
+    pouredOnce=true;
     if(pr.pour)return;
     const d=new THREE.Vector3(-pr.base.x,0,-pr.base.z).normalize();          // toward the big bowl
     const axis=new THREE.Vector3(d.z,0,-d.x).normalize();                  // tilting about this swings the top toward d
@@ -1434,6 +1447,16 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
     if(pendingMove){hoverPr=pickProp(pendingMove[0],pendingMove[1]);pendingMove=null;document.documentElement.style.cursor=hoverPr?'pointer':''}
     else if(lift<0.5&&hoverPr){hoverPr=null;document.documentElement.style.cursor=''}
     updateFx(dt,time,speed);
+    {  // floating "click me" bubble above the kecap bottle, Home only, until something has been poured
+      const tip=document.getElementById('pourTip');
+      const showTip=!pouredOnce&&lift>0.9&&!document.documentElement.classList.contains('loading')&&propList[0].o.visible;
+      if(showTip){
+        const v=new THREE.Vector3();propList[0].o.getWorldPosition(v);v.y+=2.45*props.scale.x;v.project(camera);
+        const bob=reduce?0:Math.sin(time*2.4)*4;
+        tip.style.transform=`translate(${(v.x+1)/2*W}px,${(1-v.y)/2*H+bob}px) translate(-50%,-100%)`;
+      }
+      tip.classList.toggle('show',showTip);
+    }
     if(mixAmt>0)noodleMats.forEach((m,i)=>m.color.copy(noodleBase[i]).lerp(mixCol,mixAmt*0.45));
     steam.forEach(m=>{
       const u=m.userData;u.t=(u.t+dt*u.sp*(reduce?0:1)*(1+speed*2))%1;

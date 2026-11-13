@@ -614,7 +614,14 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const canvas=document.getElementById('scene');
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  // resolution: start sharp but not wasteful, then adapt to how fast this device actually renders
+  const PR_MAX=Math.min(devicePixelRatio||1,1.5);
+  let pixelRatio=PR_MAX,frameEma=16,frameCount=0;
+  function fitPixelRatio(){                      // keep the canvas under ~2.4M pixels on big/HiDPI screens
+    const cap=Math.sqrt(2.4e6/Math.max(1,innerWidth*innerHeight));
+    return Math.max(0.6,Math.min(pixelRatio,PR_MAX,cap));
+  }
+  renderer.setPixelRatio(fitPixelRatio());
   renderer.outputEncoding=THREE.sRGBEncoding;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure=1.05;
@@ -770,7 +777,7 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
       pts.push(new THREE.Vector3(Math.sin(a)*r,y,Math.cos(a)*r));
     }
     const curve=new THREE.CatmullRomCurve3(pts,false,'centripetal');
-    const m=new THREE.Mesh(new THREE.TubeGeometry(curve,220,0.03,8,false),noodleMats[n%3]);
+    const m=new THREE.Mesh(new THREE.TubeGeometry(curve,140,0.03,7,false),noodleMats[n%3]);
     m.castShadow=true;noodleGroup.add(m);
   }
 
@@ -1289,7 +1296,7 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
   function resize(){
     W=innerWidth;H=innerHeight;mobile=W<720;
     if(!W||!H)return;                    // page can start hidden (0×0); wait until it has a size
-    renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
+    renderer.setPixelRatio(fitPixelRatio());renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
   }
   addEventListener('resize',resize);resize();
 
@@ -1339,7 +1346,17 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
 
   const clock=new THREE.Clock();
   function frame(){
-    const dt=Math.min(clock.getDelta(),0.05),time=clock.elapsedTime;
+    const rawDt=clock.getDelta(),dt=Math.min(rawDt,0.05),time=clock.elapsedTime;
+    // adaptive resolution: if frames are slow (laptop GPU, battery saver), render fewer pixels so the stir stays smooth
+    if(rawDt<0.5&&!document.hidden){
+      frameEma+=(rawDt*1000-frameEma)*0.05;
+      if(++frameCount%45===0){
+        const before=pixelRatio;
+        if(frameEma>22&&pixelRatio>0.6)pixelRatio=Math.max(0.6,pixelRatio*0.85);
+        else if(frameEma<14&&pixelRatio<PR_MAX)pixelRatio=Math.min(PR_MAX,pixelRatio*1.08);
+        if(pixelRatio!==before&&W&&H){renderer.setPixelRatio(fitPixelRatio());renderer.setSize(W,H,false)}
+      }
+    }
     if(innerWidth!==W||innerHeight!==H)resize();            // catch size changes a resize event missed
     if(!W||!H){requestAnimationFrame(frame);return}          // nothing to draw into yet
     const tg=target(),p=tg.p;

@@ -637,14 +637,21 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
   navLinks.forEach(a=>a.classList.toggle('aktif',a.getAttribute('href')==='#'+pages[pager.idx].id));
 
   if(typeof THREE==='undefined') return;
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const canvas=document.getElementById('scene');
   // software rendering (no GPU, e.g. SwiftShader / Microsoft Basic Render) gets a light mode:
   // no shadows, no antialiasing, low resolution, so the page never freezes on weak machines
   const LITE=(()=>{try{const g=document.createElement('canvas').getContext('webgl');if(!g)return true;
     const x=g.getExtension('WEBGL_debug_renderer_info');const r=x?g.getParameter(x.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER);
     g.getExtension('WEBGL_lose_context')?.loseContext();
     return /swiftshader|llvmpipe|softpipe|software|basic render/i.test(r||'');}catch(e){return false}})()||/[?&]lite\b/.test(location.search);
+  // without a GPU the first 3D frame freezes the page for a moment, so wait until the visitor interacts
+  if(LITE){
+    const evs=['pointermove','pointerdown','wheel','touchstart','keydown'];
+    const go=()=>{evs.forEach(n=>removeEventListener(n,go,true));start3D()};
+    evs.forEach(n=>addEventListener(n,go,{capture:true,passive:true}));
+  } else start3D();
+  function start3D(){
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canvas=document.getElementById('scene');
   if(LITE){  // light mode: one cheap Lambert shader instead of PBR, far less shader compiling and per-pixel work
     const Lam=THREE.MeshLambertMaterial,skip=/^(roughness|metalness|clearcoat|sheen|transmission|reflectivity|ior|envMapIntensity|normal|thickness|specular|attenuation|flatShading)/;
     const mk=function(p){const q={};for(const k in (p||{}))if(!skip.test(k))q[k]=p[k];return new Lam(q)};
@@ -1544,6 +1551,7 @@ html.loading .hero > *{opacity:0;transform:translateY(24px)}
   }
   let liteF=-1,liteHover=null,liteSize=0,liteIdle=0;
   frame();
+  }
 })();
 </script>
 </body>
